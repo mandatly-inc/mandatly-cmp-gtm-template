@@ -4,6 +4,6 @@
 
 • Sign up for Mandatly Cookie Compliance on [https://mandatly.com/pricing/by-solutions](https://mandatly.com/pricing/by-solutions) 
 
-• Learn more about How to implement Mandatly CMP Community Template using  [https://help.mandatly.net/EnableGoogleConsentModev2.html](https://help.mandatly.net/GoogleConsentModev2.html)
+• Learn more about How to implement Mandatly CMP Community Template using  [https://help.mandatly.net/GoogleConsentModev2.html](https://help.mandatly.net/GoogleConsentModev2.html)
 
  
