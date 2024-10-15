@@ -1,5 +1,5 @@
 homepage: "https://mandatly.com"
 documentation: "https://help.mandatly.net/GoogleConsentModev2.html"
 versions:
-  - sha: be3297dd5d5339aab4add9556177b1a54286eca2
+  - sha: 0c63ffdc6f2d888dda63706779b67674e111c3b2
     changeNotes: Initial Version
