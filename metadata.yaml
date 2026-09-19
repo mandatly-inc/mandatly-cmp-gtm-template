@@ -2,8 +2,10 @@ homepage: "https://mandatly.com"
 documentation: "https://help.mandatly.net/GoogleConsentModev2.html"
 versions:
   # Latest version
+  - sha: 4c20a251d1267248181c4b7fee7570c5a8d86a40
+    changeNotes: Consent Mode default is now set in both basic and advanced mode, region defaults are applied in both modes, and the Google developer ID is set before any consent command.
+  # Older versions
   - sha: 02c053b13f4bc819b204724b8526a13e42cfdc0e
     changeNotes: Bug fixes
-  # Older versions
   - sha: b6239697e29d2e687b13d2ead46d3346fb9469f5
     changeNotes: Initial Version
