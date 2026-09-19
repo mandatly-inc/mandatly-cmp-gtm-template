@@ -282,99 +282,113 @@ ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 const injectScript = require("injectScript");
 const queryPermission = require("queryPermission");
 const setDefaultConsentState = require("setDefaultConsentState");
+const updateConsentState = require("updateConsentState");
 const encodeUri = require("encodeUri");
 const gtagSet = require("gtagSet");
 const getCookieValues = require("getCookieValues");
-const updateConsentState = require("updateConsentState");
-const JSON = require('JSON');
-const decode = require('decodeUriComponent');
-const setInWindow = require('setInWindow');
+const JSON = require("JSON");
+const setInWindow = require("setInWindow");
+const copyFromWindow = require("copyFromWindow");
 
-let setDefaultSetting = true;
+const CONSENT_TYPES = ["ad_storage", "ad_user_data", "ad_personalization",
+    "analytics_storage", "functionality_storage", "personalization_storage"];
+
 const regionSettings = data.regionSettings || [];
 const waitForTime = data.waitForTime;
 const enableConsentMode = data.enableConsentMode;
 const enableAdvancedMode = data.enableAdvancedMode;
-const copyFromWindow = require('copyFromWindow');
-
-function setConsentInitStates(consentData) {
-    if (waitForTime > 0) consentData.wait_for_update = waitForTime;
-    setDefaultConsentState(consentData);
-}
 
 gtagSet({
     "developer_id.dMzQ4OT": true
 });
 
+function consentValue(value) {
+    return value === "granted" ? "granted" : "denied";
+}
+
+function setConsentInitStates(consentData) {
+    consentData.wait_for_update = (waitForTime > 0) ? waitForTime : 500;
+    setDefaultConsentState(consentData);
+}
+
+function allDenied() {
+    return {
+        ad_storage: "denied",
+        analytics_storage: "denied",
+        ad_user_data: "denied",
+        ad_personalization: "denied",
+        functionality_storage: "denied",
+        personalization_storage: "denied",
+        security_storage: "granted"
+    };
+}
+
+let defaultWasSet = false;
+
 if (enableConsentMode === true) {
     if (enableAdvancedMode === true) {
         gtagSet({
             ads_data_redaction: !!data.adsRedaction,
-            url_passthrough: !!data.urlPassThrough,
+            url_passthrough: !!data.urlPassThrough
         });
+    }
 
-        for (let index = 0; index < regionSettings.length; index++) {
-            const regionSetting = regionSettings[index];
-            const consentRegionData = {
-                ad_storage: regionSetting.ad_storage,
-                analytics_storage: regionSetting.analytics_storage,
-                ad_user_data: regionSetting.ad_user_data,
-                ad_personalization: regionSetting.ad_personalization,
-                functionality_storage: regionSetting.functionality_storage,
-                personalization_storage: regionSetting.personalization_storage,
-                security_storage: "granted"
-            };
-            const regionsToSetFor = regionSetting.regions
-                .split(",")
-                .map((region) => region.trim())
-                .filter((region) => region);
-            if (regionsToSetFor.length > 0 && regionsToSetFor[0].toLowerCase() !== "all")
-                consentRegionData.region = regionsToSetFor;
-            else setDefaultSetting = false;
-            setConsentInitStates(consentRegionData);
+    let hasCatchAllRegion = false;
+
+    for (let index = 0; index < regionSettings.length; index++) {
+        const regionSetting = regionSettings[index];
+        const consentRegionData = {
+            ad_storage: consentValue(regionSetting.ad_storage),
+            analytics_storage: consentValue(regionSetting.analytics_storage),
+            ad_user_data: consentValue(regionSetting.ad_user_data),
+            ad_personalization: consentValue(regionSetting.ad_personalization),
+            functionality_storage: consentValue(regionSetting.functionality_storage),
+            personalization_storage: consentValue(regionSetting.personalization_storage),
+            security_storage: "granted"
+        };
+
+        const regionsToSetFor = (regionSetting.regions || "")
+            .split(",")
+            .map((region) => region.trim())
+            .filter((region) => region);
+
+        if (regionsToSetFor.length > 0 && regionsToSetFor[0].toLowerCase() !== "all") {
+            consentRegionData.region = regionsToSetFor;
+        } else {
+            hasCatchAllRegion = true;
         }
 
-        if (setDefaultSetting) {
-            setConsentInitStates({
-                ad_storage: "denied",
-                analytics_storage: "denied",
-                ad_user_data: "denied",
-                ad_personalization: "denied",
-                functionality_storage: "denied",
-                personalization_storage: "denied",
-                security_storage: "granted"
-            });
-        }
+        setConsentInitStates(consentRegionData);
+        defaultWasSet = true;
+    }
+
+    if (!hasCatchAllRegion) {
+        setConsentInitStates(allDenied());
+        defaultWasSet = true;
     }
 
     const consent = getCookieValues("Mdt_Consent");
     if (consent && typeof consent[0] === "string") {
-        let cookieObj = JSON.parse(consent[0]);
-        if (cookieObj) {
-            if (enableAdvancedMode === false) {
-                setConsentInitStates({
-                    ad_storage: "denied",
-                    analytics_storage: "denied",
-                    ad_user_data: "denied",
-                    ad_personalization: "denied",
-                    functionality_storage: "denied",
-                    personalization_storage: "denied",
-                    security_storage: "granted",
-                    wait_for_update: 500
-                });
+        const cookieObj = JSON.parse(consent[0]);
+        if (cookieObj && cookieObj.googleconsent) {
+            const stored = cookieObj.googleconsent;
+            const update = { security_storage: "granted" };
+            for (let t = 0; t < CONSENT_TYPES.length; t++) {
+                update[CONSENT_TYPES[t]] = consentValue(stored[CONSENT_TYPES[t]]);
             }
-            updateConsentState(cookieObj.googleconsent);
+            updateConsentState(update);
         }
     }
 }
 
-if (queryPermission('access_globals', 'readwrite', 'MandatlyScriptData')) {
-    const existingData = copyFromWindow('MandatlyScriptData') || {};
+if (queryPermission("access_globals", "readwrite", "MandatlyScriptData")) {
+    const existingData = copyFromWindow("MandatlyScriptData") || {};
     existingData.useGTagTemplate = true;
     existingData.useGCM = enableConsentMode;
     existingData.useGTagAdvanceMode = enableAdvancedMode;
+    existingData.gcmDefaultSet = defaultWasSet;
 
-    setInWindow('MandatlyScriptData', existingData, true);
+    setInWindow("MandatlyScriptData", existingData, true);
 }
 
 let scriptURL =
