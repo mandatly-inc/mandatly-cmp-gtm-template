@@ -11,7 +11,7 @@ ___INFO___
 {
   "type": "TAG",
   "id": "cvt_temp_public_id",
-  "version": 2,
+  "version": 1,
   "displayName": "Mandatly CMP",
   "categories": ["TAG_MANAGEMENT", "PERSONALIZATION"],
   "brand": {
@@ -57,7 +57,7 @@ ___TEMPLATE_PARAMETERS___
     "name": "enableAdvancedMode",
     "checkboxText": "Execute Google Tags Before Consent",
     "simpleValueType": true,
-    "help": "Execute Google Tags Before Consent activates Advanced Consent Mode, allowing default consent tags to fire as soon as your website loads. If you disable this option, Basic Mode will be used, indicating that default consent tags won’t execute until a user interacts with a consent banner. In Basic Mode, it is required to block all Google Tags and Third-Party cookies. \u003ca href\u003d\"https://help.mandatly.net/Blockingthird-partycookiesviaGTM.html\" target\u003d\"_blank\"\u003eClick here\u003c/a\u003e\nfor more information on blocking tags and third-party cookies before consent.\nThis setting will overwrite Mandatly Application settings.",
+    "help": "The Google Consent Mode default consent is always sent as soon as the page loads, before any Google tag fires, whether this option is enabled or not. Enabling it applies the Ads Data Redaction and URL Passthrough settings from Other Settings. To block Google tags and other trackers until the visitor gives consent (Basic Consent Mode), sign in to your Mandatly account and enable \"Block Trackers Until Consent is Granted\" in the GeoConsent Rule for the relevant region. \u003ca href\u003d\"https://help.mandatly.net/Blockingthird-partycookiesviaGTM.html\" target\u003d\"_blank\"\u003eClick here\u003c/a\u003e\nfor more information on blocking tags and third-party cookies before consent.",
     "defaultValue": true,
     "enablingConditions": [
       {
